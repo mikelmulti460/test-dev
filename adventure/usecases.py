@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from django.utils import timezone
 from .notifiers import Notifier
 from .repositories import JourneyRepository
 
-
+from .models import Journey
 class StartJourney:
     def __init__(self, repository: JourneyRepository, notifier: Notifier):
         self.repository = repository
@@ -25,3 +26,18 @@ class StartJourney:
 
     class CantStart(Exception):
         pass
+
+class StopJourney:
+    def __init__(self, repository: JourneyRepository, notifier: Notifier):
+        self.repository = repository
+        self.notifier = notifier
+
+    def set_params(self, journey: Journey) -> StopJourney:
+        self.journey = journey
+        return self
+
+    def execute(self) -> None:
+        self.journey.end = timezone.now().date()
+        self.repository.save_journey(self.journey)
+        
+        return self.journey

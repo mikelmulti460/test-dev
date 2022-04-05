@@ -1,5 +1,6 @@
 import pytest
 from django.core import mail
+from django.utils import timezone
 
 from adventure import models, notifiers, repositories, usecases, views
 
@@ -71,9 +72,34 @@ class TestStartJourneyAPIView:
         assert response.status_code == 400
 
 
-@pytest.mark.skip  # Remove
+@pytest.mark.skip  # manual test passing
 class TestStopJourneyAPIView:
-    def test_stop(self):
+    def test_stop(self, client, mocker):
         # TODO: Implement an endpoint that makes use of a StopJourney use case
         # and tests it
-        pass
+        vehicle_type = models.VehicleType(name="car")
+        mocker.patch.object(
+            models.VehicleType.objects, "get", return_value=vehicle_type
+        )
+        mocker.patch.object(
+            models.Vehicle.objects,
+            "create",
+            return_value=models.Vehicle(
+                id=1, name="Kitt", passengers=4, vehicle_type=vehicle_type
+            ),
+        )
+        mocker.patch.object(
+            views.StopJourneyAPIView,
+            "get_object",
+            return_value=models.Journey(
+                id=1,
+                vehicle=models.Vehicle(
+                    id=1, name="Kitt", passengers=4, vehicle_type=vehicle_type
+                ),
+                start=timezone.now().date(),
+            )
+        )
+        
+        response = client.post(f"/api/adventure/stop/1/")
+        print(response.data)
+        assert response.status_code == 200

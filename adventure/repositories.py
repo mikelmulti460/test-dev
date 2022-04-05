@@ -15,7 +15,14 @@ class JourneyRepository:
             name=name, passengers=passengers, vehicle_type=vehicle_type
         )
 
+    def get_journey(self, pk: int, partial: bool = False) -> models.Journey:
+        return models.Journey.objects.get(pk=pk)
+
     def create_journey(self, vehicle: models.Vehicle) -> models.Journey:
         return models.Journey.objects.create(
             vehicle=vehicle, start=timezone.now().date()
         )
+    
+    def save_journey(self, journey: models.Journey) -> models.Journey:
+        journey.save()
+        return journey
